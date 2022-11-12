@@ -31,17 +31,20 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _GameScreen extends State<MyHomePage> {
-
+  String value = "X";
+  int turn = 0;
+  bool gameOver = false;
   Game game = Game();
 
   void initState(){
     super.initState();
-    //TODO - inititalize game board
+    game.board = Game.initGameBoard();
     print('game');
   }
 
   @override
   Widget build(BuildContext context) {
+    double boardWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
@@ -52,8 +55,8 @@ class _GameScreen extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
               Container(
-                width: 400, //TODO - setja í breytu
-                height: 400, //TODO - setja í breytu
+                width: boardWidth,
+                height: boardWidth,
                 child: GridView.count(
                   crossAxisCount: 9 ~/ 3, //TODO - setja í breytur
                   padding: EdgeInsets.all(16.0),
@@ -61,12 +64,40 @@ class _GameScreen extends State<MyHomePage> {
                   crossAxisSpacing: 8.0,
                   children: List.generate(9, (index) {
                     return InkWell(
+                      onTap: (){
+                        print('i got tapped: $index');
+                        setState(() {
+                          game.board![index] = value;
+                          turn++;
+                          if(gameOver){
+                            print('Game over! - Print winner: ...');
+                          } else if(!gameOver && turn == 9){
+                            print('It is a draw');
+                            gameOver = true;
+                          }
+                          gameOver = game.winnerCheck(value, index);
+                          if(value == "X"){
+                            value = "O";
+                          } else {
+                            value = "X";
+                          }
+                        });
+                      },
                       child: Container(
                         width: 200, //TODO - setja í breytu
                         height: 200,//TODO - setja í breytu
                         decoration: BoxDecoration(
                           color: MainColor.white,
                           borderRadius: BorderRadius.circular(16.0),
+                        ),
+                        child: Center(
+                          child: Text(
+                            game.board![index],
+                            style: TextStyle(
+                              color: game.board![index] == 'X' ? MainColor.x : MainColor.o,
+                              fontSize: 64,
+                            ),
+                          ),
                         ),
                       )
                     );
@@ -75,12 +106,15 @@ class _GameScreen extends State<MyHomePage> {
                 )
                 )
               ),
+            //TODO:
+            
             ElevatedButton.icon(
               onPressed: () {
                 //TODO - setState()
-                /* setState(() {
-
-                });*/
+                setState(() {
+                  game.board = Game.initGameBoard();
+                  value = 'X';
+                });
               },
               icon: Icon(Icons.replay),
               label: Text('Repeat game'),
