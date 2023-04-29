@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'ui/colors.dart';
+
 import 'logic/game.dart';
+import 'ui/colors.dart';
 
 void main() {
   runApp(const MyApp());
@@ -31,13 +32,22 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _GameScreen extends State<MyHomePage> {
-
+  String value = 'X';
+  bool gameOver = false;
+  String result = '';
+  int turn = 0;
+  List<List<String>> scoreboard = [
+    ["", "", ""],
+    ["", "", ""],
+    ["", "", ""],
+  ];
   Game game = Game();
 
-  void initState(){
+  void initState() {
     super.initState();
-    //TODO - inititalize game board
-    print('game');
+    game.board = Game.initGameBoard();
+    print('game $game');
+    print(game.board);
   }
 
   @override
@@ -49,47 +59,84 @@ class _GameScreen extends State<MyHomePage> {
       backgroundColor: MainColor.background,
       body: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
               Container(
-                width: 400, //TODO - setja í breytu
-                height: 400, //TODO - setja í breytu
-                child: GridView.count(
-                  crossAxisCount: 9 ~/ 3, //TODO - setja í breytur
-                  padding: EdgeInsets.all(16.0),
-                  mainAxisSpacing: 8.0,
-                  crossAxisSpacing: 8.0,
-                  children: List.generate(9, (index) {
-                    return InkWell(
-                      child: Container(
-                        width: 200, //TODO - setja í breytu
-                        height: 200,//TODO - setja í breytu
-                        decoration: BoxDecoration(
-                          color: MainColor.white,
-                          borderRadius: BorderRadius.circular(16.0),
-                        ),
-                      )
-                    );
-                  }
-
-                )
-                )
-              ),
-            ElevatedButton.icon(
-              onPressed: () {
-                //TODO - setState()
-                /* setState(() {
-
-                });*/
-              },
-              icon: Icon(Icons.replay),
-              label: Text('Repeat game'),
-            )
-          ]
-        ),
-
+                  width: 400, //TODO - setja í breytu
+                  height: 400, //TODO - setja í breytu
+                  child: GridView.count(
+                      crossAxisCount: 9 ~/ 3,
+                      //TODO - setja í breytur
+                      padding: EdgeInsets.all(16.0),
+                      mainAxisSpacing: 8.0,
+                      crossAxisSpacing: 8.0,
+                      children: List.generate(9, (index) {
+                        return InkWell(
+                          onTap: () {
+                            setState(() {
+                              if (game.board[index].isEmpty) {
+                                game.board[index] = value;
+                              }
+                              turn++;
+                              if (gameOver) {
+                                result = 'Game is over $value is the looser';
+                              } else if (!gameOver && turn == 9) {
+                                result = 'It is a draw';
+                                gameOver = true;
+                              } else {
+                                gameOver =
+                                    game.winnerCheck(value, index, scoreboard);
+                              }
+                              if (value == 'X') {
+                                value = 'O';
+                              } else {
+                                value = 'X';
+                              }
+                            });
+                          },
+                          child: Container(
+                            width: 200, //TODO - setja í breytu
+                            height: 200, //TODO - setja í breytu
+                            decoration: BoxDecoration(
+                              color: MainColor.white,
+                              borderRadius: BorderRadius.circular(16.0),
+                            ),
+                            child: Center(
+                              child: Text(
+                                game.board[index],
+                                style: TextStyle(
+                                    fontSize: 64,
+                                    color: game.board[index] == 'X'
+                                        ? MainColor.x
+                                        : MainColor.o),
+                              ),
+                            ),
+                          ),
+                        );
+                      }))),
+              Text(result),
+              ElevatedButton.icon(
+                onPressed: () {
+                  setState(() {
+                    game.board = Game.initGameBoard();
+                    value = 'X';
+                    result = '';
+                    gameOver = false;
+                    turn = 0;
+                    scoreboard = [
+                      ["", "", ""],
+                      ["", "", ""],
+                      ["", "", ""],
+                    ];
+                  });
+                },
+                icon: Icon(Icons.replay),
+                label: Text(
+                  'Repeat game',
+                ),
+              )
+            ]),
       ),
     );
   }
 }
-
