@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'ui/colors.dart';
+
 import 'logic/game.dart';
+import 'ui/colors.dart';
 
 void main() {
   runApp(const MyApp());
@@ -32,11 +33,16 @@ class MyHomePage extends StatefulWidget {
 
 class _GameScreen extends State<MyHomePage> {
   String value = "X";
+  String result = 'The results: ';
   int turn = 0;
   bool gameOver = false;
   Game game = Game();
-
-  void initState(){
+  List<List<String>> scoreboard = [
+    ["", "", ""],
+    ["", "", ""],
+    ["", "", ""],
+  ];
+  void initState() {
     super.initState();
     game.board = Game.initGameBoard();
     print('game');
@@ -52,78 +58,80 @@ class _GameScreen extends State<MyHomePage> {
       backgroundColor: MainColor.background,
       body: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
               Container(
-                width: boardWidth,
-                height: boardWidth,
-                child: GridView.count(
-                  crossAxisCount: 9 ~/ 3, //TODO - setja í breytur
-                  padding: EdgeInsets.all(16.0),
-                  mainAxisSpacing: 8.0,
-                  crossAxisSpacing: 8.0,
-                  children: List.generate(9, (index) {
-                    return InkWell(
-                      onTap: (){
-                        print('i got tapped: $index');
-                        setState(() {
-                          game.board![index] = value;
-                          turn++;
-                          if(gameOver){
-                            print('Game over! - Print winner: ...');
-                          } else if(!gameOver && turn == 9){
-                            print('It is a draw');
-                            gameOver = true;
-                          }
-                          gameOver = game.winnerCheck(value, index);
-                          if(value == "X"){
-                            value = "O";
-                          } else {
-                            value = "X";
-                          }
-                        });
-                      },
-                      child: Container(
-                        width: 200, //TODO - setja í breytu
-                        height: 200,//TODO - setja í breytu
-                        decoration: BoxDecoration(
-                          color: MainColor.white,
-                          borderRadius: BorderRadius.circular(16.0),
-                        ),
-                        child: Center(
-                          child: Text(
-                            game.board![index],
-                            style: TextStyle(
-                              color: game.board![index] == 'X' ? MainColor.x : MainColor.o,
-                              fontSize: 64,
-                            ),
-                          ),
-                        ),
-                      )
-                    );
-                  }
-
-                )
-                )
-              ),
-            //TODO:
-            
-            ElevatedButton.icon(
-              onPressed: () {
-                //TODO - setState()
-                setState(() {
-                  game.board = Game.initGameBoard();
-                  value = 'X';
-                });
-              },
-              icon: Icon(Icons.replay),
-              label: Text('Repeat game'),
-            )
-          ]
-        ),
-
+                  width: 400,
+                  height: 400,
+                  child: GridView.count(
+                      crossAxisCount: 9 ~/ 3, //TODO - setja í breytur
+                      padding: EdgeInsets.all(16.0),
+                      mainAxisSpacing: 8.0,
+                      crossAxisSpacing: 8.0,
+                      children: List.generate(9, (index) {
+                        return InkWell(
+                            onTap: () {
+                              setState(() {
+                                game.board![index] = value;
+                                turn++;
+                                if (gameOver) {
+                                  result = 'Game is over! $value is the looser';
+                                } else if (!gameOver && turn == 9) {
+                                  result = 'It is a draw';
+                                  gameOver = true;
+                                }
+                                gameOver =
+                                    game.winnerCheck(value, index, scoreboard);
+                                if (value == "X") {
+                                  value = "O";
+                                } else {
+                                  value = "X";
+                                }
+                              });
+                            },
+                            child: Container(
+                              width: 200, //TODO - setja í breytu
+                              height: 200, //TODO - setja í breytu
+                              decoration: BoxDecoration(
+                                color: MainColor.white,
+                                borderRadius: BorderRadius.circular(16.0),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  game.board![index],
+                                  style: TextStyle(
+                                    color: game.board![index] == 'X'
+                                        ? MainColor.x
+                                        : MainColor.o,
+                                    fontSize: 64,
+                                  ),
+                                ),
+                              ),
+                            ));
+                      }))),
+              //TODO:
+              Text(result,
+                  style: TextStyle(color: MainColor.white, fontSize: 38)),
+              ElevatedButton.icon(
+                onPressed: () {
+                  //TODO - setState()
+                  setState(() {
+                    game.board = Game.initGameBoard();
+                    value = 'X';
+                    result = 'New game created';
+                    turn = 0;
+                    scoreboard = [
+                      ["", "", ""],
+                      ["", "", ""],
+                      ["", "", ""],
+                    ];
+                  });
+                },
+                icon: Icon(Icons.replay),
+                label: Text('Repeat game'),
+              )
+            ]),
       ),
     );
   }
 }
-
